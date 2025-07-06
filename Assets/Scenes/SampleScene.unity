@@ -272,10 +272,10 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1811686392}
-  - {fileID: 1118473356}
-  - {fileID: 1664156686}
-  - {fileID: 1021815913}
   - {fileID: 2107909661}
+  - {fileID: 1021815913}
+  - {fileID: 1664156686}
+  - {fileID: 1118473356}
   m_Father: {fileID: 373425701}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
@@ -393,15 +393,15 @@ MonoBehaviour:
   SkillMenuActive: 0
   elements:
   - {fileID: 1811686396}
-  - {fileID: 1118473360}
-  - {fileID: 1664156690}
-  - {fileID: 1021815917}
   - {fileID: 2107909665}
+  - {fileID: 1021815917}
+  - {fileID: 1664156690}
+  - {fileID: 1118473360}
+  chosenElement: {fileID: 0}
   defaultPos: {x: 0, y: 0}
   targetPosition: {x: 579.3, y: 311.0769}
   targetScale: 1.35
-  positiveBuffer: 180
-  negativeBuffer: -360
+  highlightAngle: 270
   SkillMenuTransform: {fileID: 403878855}
   skillMenuDefaultPos: {x: 0, y: 0}
   skillMenuTargetPos: {x: 0, y: 0}
@@ -411,6 +411,7 @@ MonoBehaviour:
   skillMenuTitle: {fileID: 980852218}
   skillMenuBG: {fileID: 2136803201}
   GLG: {fileID: 296750007}
+  chosenIndex: 2
 --- !u!1 &158665432
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,15 +5,17 @@ using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEngine.GraphicsBuffer;
 
 public class SkillUIAnimator : MonoBehaviour
 {
     public float radius;
     public bool SkillMenuActive;
     public List<Element> elements;
+    public Element chosenElement;
     public Vector2 defaultPos, targetPosition;
     public float targetScale;
-    public float positiveBuffer = 180f, negativeBuffer = -360f;
+    public float highlightAngle = 270f;
 
     [Header("Skill Menu")]
     public Transform SkillMenuTransform;
@@ -27,6 +29,7 @@ public class SkillUIAnimator : MonoBehaviour
     private void Awake()
     {
         skillBtn = GetComponent<Button>();
+        chosenElement = elements[chosenIndex];
         Application.targetFrameRate = 100;
     }
 
@@ -48,7 +51,7 @@ public class SkillUIAnimator : MonoBehaviour
     {
         SkillMenuActive = !SkillMenuActive;
         StartCoroutine(AnimateButton());
-        StartCoroutine(AnimateElements());
+        StartCoroutine(InitElementsAnimate());
     }
 
     private IEnumerator AnimateButton()
@@ -79,6 +82,7 @@ public class SkillUIAnimator : MonoBehaviour
             timer = Time.unscaledTime - startTime;
             float t = Mathf.Clamp01(timer / animSpeed);
             t = Mathf.SmoothStep(0, 1, t);
+
             float x = Mathf.Lerp(startPos.x, targetPos.x, t);
             float y = Mathf.Lerp(startPos.y, targetPos.y, t);
             objT.localPosition = new Vector2(x, y);
@@ -126,12 +130,22 @@ public class SkillUIAnimator : MonoBehaviour
     private float GetAngleFromPosition(Vector2 pos)
     {
         float angle = Mathf.Atan2(pos.x, pos.y) * Mathf.Rad2Deg;
-        return Mathf.Atan2(pos.x, pos.y) * Mathf.Rad2Deg;
+        return angle < 0 ? angle + 360f : angle;
     }
+
+    private float AngleCorrection(float angle, float angleDelta)
+    {
+        if (angle > 360f)
+            angle += 90 + angleDelta;
+        else if (angle < 180f)
+            angle -= 90 + angleDelta;
+        return angle;
+    }
+
 
     private float ElementScaler(float angle)
     {
-        float difference = Mathf.Abs(angle + 90f);
+        float difference = Mathf.Abs(Mathf.DeltaAngle(highlightAngle, angle));
         float scale = difference switch
         {
             0f => 1.25f,
@@ -141,21 +155,81 @@ public class SkillUIAnimator : MonoBehaviour
         return scale;
     }
 
-
-    private IEnumerator AnimateElements()
+    public int chosenIndex;
+    private IEnumerator InitElementsAnimate()
     {
         float angleDelta = SkillMenuActive ? (180f / (elements.Count - 1)) : (360f / elements.Count);
-        float sectionAngle = 0;
-        foreach (var element in elements)
+        float sectionAngle = SkillMenuActive ? 180f : 0f;
+
+        for (int i = 0; i < elements.Count; i++)
         {
+            var element = elements[i];
             element.oldAngle = GetAngleFromPosition(element.transform.localPosition);
+            if (i < 1 && SkillMenuActive)
+            {
+                elements[chosenIndex].newAngle = highlightAngle;
+                var gap = chosenIndex - i;
+                sectionAngle = highlightAngle - (gap * angleDelta);
+            }
             element.newAngle = sectionAngle;
             sectionAngle += angleDelta;
-            element.newScale = ElementScaler(element.newAngle);
+            //print($"{element.Name} {element.oldAngle} {element.newAngle}");
         }
+        float offset = highlightAngle - chosenElement.newAngle;
 
+        SetElementGroupAngles(offset, angleDelta);        
         yield return StartCoroutine(LerpElements(elementAnimSpeed));
     }
+
+    private void SetElementGroupAngles(float offset, float angleDelta)
+    {
+        foreach (var element in elements)
+        {
+            float gap;
+            if (SkillMenuActive)
+            {
+                element.newAngle = AngleCorrection(element.newAngle + offset, angleDelta);
+
+                gap = Mathf.Abs(element.newAngle - element.oldAngle);
+                if (gap > 180f)
+                {
+                    if (element.newAngle < element.oldAngle)
+                        element.newAngle += 360f;
+                    else
+                        element.newAngle -= 360f;
+                }
+
+                if (chosenElement?.oldAngle == 72f)
+                {
+                    if (element.oldAngle < element.newAngle)
+                        element.newAngle -= 360f;
+                }
+
+                //print($"{element.Name} {element.oldAngle} {element.newAngle}");
+            }
+            else
+            {
+                gap = Mathf.Abs(element.oldAngle - element.newAngle);
+                if (gap > 180f)
+                {
+                    if (element.oldAngle < element.newAngle)
+                        element.oldAngle += 360f;
+                    else
+                        element.oldAngle -= 360f;
+                }
+
+                if (chosenElement?.newAngle == 72f)
+                {
+                    if (element.oldAngle > element.newAngle)
+                        element.oldAngle -= 360f;
+                }
+
+                //print($"{element.Name} {element.oldAngle} {element.newAngle}");
+            }
+            element.newScale = ElementScaler(element.newAngle);
+        }
+    }
+
 
     private IEnumerator LerpElements(float animSpeed)
     {
@@ -173,16 +247,13 @@ public class SkillUIAnimator : MonoBehaviour
                 float lerpScale = Mathf.Lerp(element.oldScale, element.newScale, t);
                 UpdateElementTransform(element.transform, lerpAngle, lerpScale);
 
-                if (element.newAngle == -90f)
+                if (element == chosenElement && (element.newAngle == highlightAngle || element.newAngle == highlightAngle - 360f))
                 {
                     element.img.material.SetFloat("_Saturation", t);
                     UpdateSkillMenu(element);
                 }
-                else if (element.oldAngle == -90f)
+                else if (element.img.material.GetFloat("_Saturation") > 0f)
                     element.img.material.SetFloat("_Saturation", 1 - t);
-
-                /*if (lerpAngle == element.newAngle)
-                    element.newAngle = GetAngleFromPosition(element.transform.localPosition);*/
             }
             yield return null;
         }
@@ -211,86 +282,44 @@ public class SkillUIAnimator : MonoBehaviour
     public void ScrollElement(Element element) => StartCoroutine(ElementScroll(element));
     private IEnumerator ElementScroll(Element selectedElement)
     {
+        chosenElement = selectedElement;
         float angle = GetAngleFromPosition(selectedElement.transform.localPosition);
-        angle *= angle > 0 ? -1 : 1;
-        float step = Mathf.Abs((angle + 90f) / 45f);
-        print(angle + " " + step + " " + selectedElement.name);
+        angle = angle < 180f ? 360f : angle;
+        angle = Mathf.Round(angle);
+        selectedElement.newAngle = angle;
+
+        float diff = (angle - highlightAngle) / 45f;
+        int step = Mathf.Abs((int)diff);
+
         float direction = 0;
-        if (angle > -90f)
-            direction = 1f;
-        else if (angle < -90f)
+        if (angle > highlightAngle)
             direction = -1f;
+        else if (angle < highlightAngle)
+            direction = 1f;
         else
             yield break;
 
+
         StartCoroutine(AnimateSkillMenu(false));
         skillBtn.interactable = false;
-        float angleDelta = -180f / (elements.Count - 1);
-        Element nc0 = null, nc45 = null;                   //NC - needs correction
-        for (int s = 0; s < 1; s++)
+        float angleDelta = 180f / (elements.Count - 1);
+        foreach (var element in elements)
         {
-            foreach (var element in elements)
-            {
-                element.button.interactable = false;
-                element.newAngle = GetAngleFromPosition(element.transform.localPosition);
-                element.oldAngle = element.newAngle * (element.newAngle > 0 ? -1 : 1);
-                var target = element.oldAngle + (angleDelta * direction * step);
-                //print(element.name + " " + target);
-                if (target < -180f)
-                {
-                    if (target < -180f + angleDelta)
-                    {
-                        nc45 = element;
-                        target = negativeBuffer + angleDelta;
-                    }
-                    else
-                    {
-                        nc0 = element;
-                        target = negativeBuffer;
-                    }
-                }
-                else if (target > 0f)
-                {
-                    if (target > -angleDelta)
-                    {
-                        target = positiveBuffer + -angleDelta;
-                    }
-                    else
-                        target = positiveBuffer;
-                }
+            element.button.interactable = false;
+            float currentAngle = GetAngleFromPosition(element.transform.localPosition);
+            element.oldAngle = currentAngle < 180f ? 360f : currentAngle;
+            var target = element.oldAngle + (angleDelta * direction * step);
+            //print(element.name + " " + target);
 
-                element.newAngle = target;
-                element.newScale = ElementScaler(target);
-                //print(element.name + " correct: " + target);
-            }
+            target = AngleCorrection(target, angleDelta);
 
-            yield return StartCoroutine(LerpElements(elementAnimSpeed));
-
-            if (nc0 != null)
-            {
-                float dirtyAngle = GetAngleFromPosition(nc0.transform.localPosition);
-                if (dirtyAngle != 0f)
-                {
-                    float radians = 0f;
-                    UpdateElementTransform(nc0.transform, radians, nc0.newScale);
-                    nc0.newAngle = radians;
-                    print(dirtyAngle + " " + nc0.name + " " + nc0.newAngle);
-                }
-                nc0 = null;
-            }
-            /*if (nc45 != null)
-            {
-                float dirtyAngle = GetAngleFromPosition(nc45.transform.localPosition);
-                print(dirtyAngle + " " + nc45.name + " " + nc45.newAngle);
-                if (dirtyAngle != angleDelta)
-                {
-                    float radians = angleDelta;
-                    UpdateElementTransform(nc45.transform, radians, nc45.newScale);
-                    nc45.newAngle = radians;
-                }
-                nc45 = null;
-            }*/
+            element.newAngle = target;
+            element.newScale = ElementScaler(target);
+            //print(element.name + " correct: " + target);
         }
+
+        yield return StartCoroutine(LerpElements(elementAnimSpeed));
+
         skillBtn.interactable = true;
         yield return StartCoroutine(AnimateSkillMenu(true));
         foreach (Element e in elements)
