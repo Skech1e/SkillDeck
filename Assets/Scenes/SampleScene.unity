@@ -390,24 +390,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   radius: 125
-  SkillMenuActive: 0
-  elements:
-  - {fileID: 1811686396}
-  - {fileID: 2107909665}
-  - {fileID: 1021815917}
-  - {fileID: 1664156690}
-  - {fileID: 1118473360}
+  elements: []
   chosenElement: {fileID: 0}
   chosenIndex: 2
-  defaultPos: {x: 0, y: 0}
-  targetPosition: {x: 579.3, y: 311.0769}
   targetScale: 1.35
   highlightAngle: 270
+  elementAnimSpeed: 0.25
+  isMenuOpen: 0
   SkillMenuTransform: {fileID: 403878855}
+  defaultPos: {x: 0, y: 0}
+  targetPosition: {x: 579.3, y: 311.0769}
   skillMenuDefaultPos: {x: 0, y: 0}
   skillMenuTargetPos: {x: 0, y: 0}
   skillBtnAnimSpeed: 0.25
-  elementAnimSpeed: 0.25
   skillMenuAnimSpeed: 0.15
   skillMenuTitle: {fileID: 980852218}
   skillMenuBG: {fileID: 2136803201}

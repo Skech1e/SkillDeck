@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -32,6 +33,7 @@ public class SkillUIAnimator : MonoBehaviour
     {
         _tweener = new();
         _skillBtn = GetComponent<Button>();
+        elements = GetComponentsInChildren<Element>().ToList();
         chosenElement = elements[chosenIndex];
         Application.targetFrameRate = 100;
     }
@@ -40,14 +42,6 @@ public class SkillUIAnimator : MonoBehaviour
     {
         defaultPos = transform.localPosition;
         skillMenuDefaultPos = SkillMenuTransform.localPosition;
-    }
-
-    private void OnValidate()
-    {
-        elements = new();
-        int count = transform.childCount;
-        for (int i = 0; i < count; i++)
-            elements.Add(transform.GetChild(i).GetComponent<Element>());
     }
 
     public void SkillMenu()
