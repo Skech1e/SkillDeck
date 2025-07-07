@@ -328,7 +328,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 115580530}
-        m_TargetAssemblyTypeName: SkillButtonAnim, Assembly-CSharp
+        m_TargetAssemblyTypeName: SkillUIAnimator, Assembly-CSharp
         m_MethodName: SkillMenu
         m_Mode: 1
         m_Arguments:
@@ -398,6 +398,7 @@ MonoBehaviour:
   - {fileID: 1664156690}
   - {fileID: 1118473360}
   chosenElement: {fileID: 0}
+  chosenIndex: 2
   defaultPos: {x: 0, y: 0}
   targetPosition: {x: 579.3, y: 311.0769}
   targetScale: 1.35
@@ -410,8 +411,7 @@ MonoBehaviour:
   skillMenuAnimSpeed: 0.15
   skillMenuTitle: {fileID: 980852218}
   skillMenuBG: {fileID: 2136803201}
-  GLG: {fileID: 296750007}
-  chosenIndex: 2
+  contextMenu: {fileID: 296750007}
 --- !u!1 &158665432
 GameObject:
   m_ObjectHideFlags: 0

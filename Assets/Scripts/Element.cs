@@ -1,6 +1,6 @@
 using System;
+using System.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class Element : MonoBehaviour
@@ -10,6 +10,7 @@ public class Element : MonoBehaviour
     public Button button;
     public float oldAngle, newAngle, newScale;
     public float oldScale => transform.localScale.x;
+
     public Transform[] contextOptions;
     [SerializeField] private SkillUIAnimator skillUIAnimator;
     private void Awake()
@@ -27,5 +28,7 @@ public class Element : MonoBehaviour
     private void OnDisable()
     {
         button.onClick.RemoveAllListeners();
+        Destroy(img.material);
     }
+        
 }
